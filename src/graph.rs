@@ -45,4 +45,21 @@ mod tests {
         assert_eq!(true, lca(&map, root, n3, n4).is_some());
         assert_eq!(n1, lca(&map, root, n3, n4).unwrap());
     }
+
+    #[test]
+    fn testlca_notconn() {
+        let mut map = Graph::<&str, i32>::new();
+        let root = map.add_node("root");
+        let n1 = map.add_node("1");
+        let n3 = map.add_node("3");
+        let n4 = map.add_node("4");
+        let n5 = map.add_node("5");
+        let n6 = map.add_node("6");
+
+        assert_eq!(false, lca(&map, root, n1, n5).is_some());
+
+        assert_eq!(false, lca(&map, root, n6, n5).is_some());
+
+        assert_eq!(false, lca(&map, root, n3, n4).is_some());
+    }
 }
