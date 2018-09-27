@@ -15,6 +15,15 @@ fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, 
     return list;
 }
 
+/// A lowest common ancestor function for binary trees.
+///
+/// This function calculates the lowest common ancestor of two nodes in a graph that is structured
+/// as a binary tree.
+///
+/// * `graph` - Graph that the lowest common ancestor is applied on.
+/// * `root`  - The root node of the binary tree.
+/// * `node1` - The first node to calculate lca.
+/// * `node2` - The second node to calculate lca.
 pub fn lca_btree<N, E>(
     graph: &Graph<N, E>,
     root: NodeIndex,
