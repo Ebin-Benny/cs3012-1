@@ -1,8 +1,19 @@
 extern crate pathfinding;
 extern crate petgraph;
 
+use std::collections::LinkedList;
+use self::pathfinding::prelude::astar;
 use self::petgraph::graph::NodeIndex;
 use self::petgraph::Graph;
+
+fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, u32)> {
+    let mut list: LinkedList<(NodeIndex, u32)> = LinkedList::new();
+    let mut neighbors = graph.neighbors(n).collect::<LinkedList<NodeIndex>>();
+    for element in neighbors.iter_mut() {
+        list.push_back((*element, 1));
+    }
+    return list;
+}
 
 pub fn lca<N, E>(
     graph: &Graph<N, E>,
