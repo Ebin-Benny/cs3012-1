@@ -23,7 +23,27 @@ pub fn lca<N, E>(
 ) -> Option<NodeIndex> {
     let path1 = astar(&root, |n| neighbors(&graph, *n), |_| 0, |n| *n == node1);
     let path2 = astar(&root, |n| neighbors(&graph, *n), |_| 0, |n| *n == node2);
+    if path1.is_some() && path2.is_some() {
+        let path1arr = path1.unwrap().0;
+        let path2arr = path2.unwrap().0;
 
+        let len;
+        if path1arr.len() < path2arr.len() {
+            len = path1arr.len();
+        } else {
+            len = path2arr.len();
+        }
+
+        let mut lca = root;
+        for i in 0..len {
+            if path1arr[i] == path2arr[i] {
+                lca = path1arr[i]
+            } else {
+                break;
+            }
+        }
+        return Some(lca);
+    }
     return None;
 }
 
