@@ -15,7 +15,7 @@ fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, 
     return list;
 }
 
-pub fn lca<N, E>(
+pub fn lca_btree<N, E>(
     graph: &Graph<N, E>,
     root: NodeIndex,
     node1: NodeIndex,
@@ -34,22 +34,22 @@ pub fn lca<N, E>(
             len = path2arr.len();
         }
 
-        let mut lca = root;
+        let mut lca_btree = root;
         for i in 0..len {
             if path1arr[i] == path2arr[i] {
-                lca = path1arr[i]
+                lca_btree = path1arr[i]
             } else {
                 break;
             }
         }
-        return Some(lca);
+        return Some(lca_btree);
     }
     return None;
 }
 
 #[cfg(test)]
 mod tests {
-    use super::lca;
+    use super::lca_btree;
     use super::Graph;
 
     #[test]
@@ -70,14 +70,14 @@ mod tests {
             (n2, n5),
             (n2, n6),
         ]);
-        assert_eq!(true, lca(&map, root, n1, n5).is_some());
-        assert_eq!(root, lca(&map, root, n1, n5).unwrap());
+        assert_eq!(true, lca_btree(&map, root, n1, n5).is_some());
+        assert_eq!(root, lca_btree(&map, root, n1, n5).unwrap());
 
-        assert_eq!(true, lca(&map, root, n6, n5).is_some());
-        assert_eq!(n2, lca(&map, root, n6, n5).unwrap());
+        assert_eq!(true, lca_btree(&map, root, n6, n5).is_some());
+        assert_eq!(n2, lca_btree(&map, root, n6, n5).unwrap());
 
-        assert_eq!(true, lca(&map, root, n3, n4).is_some());
-        assert_eq!(n1, lca(&map, root, n3, n4).unwrap());
+        assert_eq!(true, lca_btree(&map, root, n3, n4).is_some());
+        assert_eq!(n1, lca_btree(&map, root, n3, n4).unwrap());
     }
 
     #[test]
@@ -90,10 +90,10 @@ mod tests {
         let n5 = map.add_node("5");
         let n6 = map.add_node("6");
 
-        assert_eq!(false, lca(&map, root, n1, n5).is_some());
+        assert_eq!(false, lca_btree(&map, root, n1, n5).is_some());
 
-        assert_eq!(false, lca(&map, root, n6, n5).is_some());
+        assert_eq!(false, lca_btree(&map, root, n6, n5).is_some());
 
-        assert_eq!(false, lca(&map, root, n3, n4).is_some());
+        assert_eq!(false, lca_btree(&map, root, n3, n4).is_some());
     }
 }
