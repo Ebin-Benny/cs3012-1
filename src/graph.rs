@@ -105,4 +105,13 @@ mod tests {
 
         assert_eq!(false, lca_btree(&map, root, n3, n4).is_some());
     }
+
+    #[test]
+    fn testlca_samenode() {
+        let mut map = Graph::<&str, i32>::new();
+        let root = map.add_node("root");
+
+        assert_eq!(true, lca_btree(&map, root, root, root).is_some());
+        assert_eq!(root, lca_btree(&map, root, root, root).unwrap());
+    }
 }
