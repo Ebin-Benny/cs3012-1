@@ -6,6 +6,7 @@ use self::petgraph::graph::NodeIndex;
 use self::petgraph::Graph;
 use std::collections::LinkedList;
 
+/// Returns list of neighbors of a node with the corresponding cost.
 fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, u32)> {
     let mut list: LinkedList<(NodeIndex, u32)> = LinkedList::new();
     let mut neighbors = graph.neighbors(n).collect::<LinkedList<NodeIndex>>();
@@ -17,8 +18,7 @@ fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, 
 
 /// A lowest common ancestor function for binary trees.
 ///
-/// This function calculates the lowest common ancestor of two nodes in a graph that is structured
-/// as a binary tree.
+/// This function calculates the lowest common ancestor of two nodes in a graph that is structured as a binary tree.
 ///
 /// * `graph` - Graph that the lowest common ancestor is applied on.
 /// * `root`  - The root node of the binary tree.
