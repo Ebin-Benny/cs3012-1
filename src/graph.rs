@@ -32,6 +32,16 @@ pub fn lca_btree<N, E>(
 ) -> Option<NodeIndex> {
     let path1 = astar(&root, |n| neighbors(&graph, *n), |_| 0, |n| *n == node1);
     let path2 = astar(&root, |n| neighbors(&graph, *n), |_| 0, |n| *n == node2);
+
+    if node1 != node2 {
+        let reverse1 = astar(&node1, |n| neighbors(&graph, *n), |_| 0, |n| *n == root);
+        let reverse2 = astar(&node2, |n| neighbors(&graph, *n), |_| 0, |n| *n == root);
+
+        if reverse1.is_some() || reverse2.is_some() {
+            return None;
+        }
+    }
+
     if path1.is_some() && path2.is_some() {
         let path1arr = path1.unwrap().0;
         let path2arr = path2.unwrap().0;
@@ -132,8 +142,8 @@ mod tests {
         map.extend_with_edges(&[
             (root, n1),
             (root, n2),
-            (n5,root),
-            (n4,root),
+            (n5, root),
+            (n4, root),
             (n1, n3),
             (n1, n4),
             (n2, n5),
