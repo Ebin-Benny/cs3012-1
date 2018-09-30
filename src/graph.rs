@@ -61,6 +61,7 @@ mod tests {
     use super::lca_btree;
     use super::Graph;
 
+    /// Tests normal operations of lca_btree on a connected graph structured as a binary tree.
     #[test]
     fn testlca_btree() {
         let mut map = Graph::<&str, i32>::new();
@@ -89,6 +90,7 @@ mod tests {
         assert_eq!(n1, lca_btree(&map, root, n3, n4).unwrap());
     }
 
+    /// Tests that `None` is returned when nodes are not connected.
     #[test]
     fn testlca_notconn() {
         let mut map = Graph::<&str, i32>::new();
@@ -106,6 +108,7 @@ mod tests {
         assert_eq!(false, lca_btree(&map, root, n3, n4).is_some());
     }
 
+    /// Tests that the same node is returned for when `node1` and `node2` are the same.
     #[test]
     fn testlca_samenode() {
         let mut map = Graph::<&str, i32>::new();
@@ -113,5 +116,29 @@ mod tests {
 
         assert_eq!(true, lca_btree(&map, root, root, root).is_some());
         assert_eq!(root, lca_btree(&map, root, root, root).unwrap());
+    }
+
+    /// Tests that the function returns `None` when there is a cycle in the graph.
+    #[test]
+    fn testlca_structure() {
+        let mut map = Graph::<&str, i32>::new();
+        let root = map.add_node("root");
+        let n1 = map.add_node("1");
+        let n2 = map.add_node("2");
+        let n3 = map.add_node("3");
+        let n4 = map.add_node("4");
+        let n5 = map.add_node("5");
+        let n6 = map.add_node("6");
+        map.extend_with_edges(&[
+            (root, n1),
+            (root, n2),
+            (n5,root),
+            (n4,root),
+            (n1, n3),
+            (n1, n4),
+            (n2, n5),
+            (n2, n6),
+        ]);
+        assert_eq!(false, lca_btree(&map, root, n1, n5).is_some());
     }
 }
