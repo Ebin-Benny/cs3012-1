@@ -26,7 +26,6 @@ fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, 
 /// * `node2` - The second node to calculate lca.
 pub fn lca_btree<N, E>(
     graph: &Graph<N, E>,
-    root: NodeIndex,
     node1: NodeIndex,
     node2: NodeIndex,
 ) -> Option<NodeIndex> {
@@ -90,14 +89,14 @@ mod tests {
             (n2, n5),
             (n2, n6),
         ]);
-        assert_eq!(true, lca_btree(&map, root, n1, n5).is_some());
-        assert_eq!(root, lca_btree(&map, root, n1, n5).unwrap());
+        assert_eq!(true, lca_btree(&map, n1, n5).is_some());
+        assert_eq!(root, lca_btree(&map, n1, n5).unwrap());
 
-        assert_eq!(true, lca_btree(&map, root, n6, n5).is_some());
-        assert_eq!(n2, lca_btree(&map, root, n6, n5).unwrap());
+        assert_eq!(true, lca_btree(&map, n6, n5).is_some());
+        assert_eq!(n2, lca_btree(&map, n6, n5).unwrap());
 
-        assert_eq!(true, lca_btree(&map, root, n3, n4).is_some());
-        assert_eq!(n1, lca_btree(&map, root, n3, n4).unwrap());
+        assert_eq!(true, lca_btree(&map, n3, n4).is_some());
+        assert_eq!(n1, lca_btree(&map, n3, n4).unwrap());
     }
 
     /// Tests that `None` is returned when nodes are not connected.
@@ -111,11 +110,11 @@ mod tests {
         let n5 = map.add_node("5");
         let n6 = map.add_node("6");
 
-        assert_eq!(false, lca_btree(&map, root, n1, n5).is_some());
+        assert_eq!(false, lca_btree(&map, n1, n5).is_some());
 
-        assert_eq!(false, lca_btree(&map, root, n6, n5).is_some());
+        assert_eq!(false, lca_btree(&map, n6, n5).is_some());
 
-        assert_eq!(false, lca_btree(&map, root, n3, n4).is_some());
+        assert_eq!(false, lca_btree(&map, n3, n4).is_some());
     }
 
     /// Tests that the same node is returned for when `node1` and `node2` are the same.
@@ -124,8 +123,8 @@ mod tests {
         let mut map = Graph::<&str, i32>::new();
         let root = map.add_node("root");
 
-        assert_eq!(true, lca_btree(&map, root, root, root).is_some());
-        assert_eq!(root, lca_btree(&map, root, root, root).unwrap());
+        assert_eq!(true, lca_btree(&map, root, root).is_some());
+        assert_eq!(root, lca_btree(&map, root, root).unwrap());
     }
 
     /// Tests that the function returns `None` when there is a cycle in the graph.
@@ -149,6 +148,6 @@ mod tests {
             (n2, n5),
             (n2, n6),
         ]);
-        assert_eq!(false, lca_btree(&map, root, n1, n5).is_some());
+        assert_eq!(false, lca_btree(&map, n1, n5).is_some());
     }
 }
