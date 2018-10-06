@@ -1,13 +1,17 @@
 extern crate pathfinding;
 extern crate petgraph;
 
-use self::pathfinding::prelude::astar;
+use self::pathfinding::prelude::{astar,topological_sort};
 use self::petgraph::graph::NodeIndex;
 use self::petgraph::Graph;
 use std::collections::LinkedList;
 
+/// Returns list of neighbors of a node.
+fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex)> {
+    graph.neighbors(n).collect::<LinkedList<NodeIndex>>()
+}
 /// Returns list of neighbors of a node with the corresponding cost.
-fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, u32)> {
+fn neighbors_cost<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, u32)> {
     let mut list: LinkedList<(NodeIndex, u32)> = LinkedList::new();
     let mut neighbors = graph.neighbors(n).collect::<LinkedList<NodeIndex>>();
     for element in neighbors.iter_mut() {
@@ -29,8 +33,12 @@ pub fn lca<N, E>(
     node1: NodeIndex,
     node2: NodeIndex,
 ) -> Option<NodeIndex> {
-    let path1 = astar(&root, |n| neighbors(&graph, *n), |_| 0, |n| *n == node1);
-    let path2 = astar(&root, |n| neighbors(&graph, *n), |_| 0, |n| *n == node2);
+
+    let nodes = graph.node_indices().collect::<Vec<NodeIndex>>();
+    let topSort = topological_sort(&nodes, |n| neighbors(&graph, *n));
+
+    let path1 = astar(&root, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node1);
+    let path2 = astar(&root, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node2);
 
     if node1 != node2 {
         let reverse1 = astar(&node1, |n| neighbors(&graph, *n), |_| 0, |n| *n == root);
