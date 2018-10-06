@@ -35,14 +35,20 @@ pub fn lca<N, E>(
 ) -> Option<NodeIndex> {
 
     let nodes = graph.node_indices().collect::<Vec<NodeIndex>>();
-    let topSort = topological_sort(&nodes, |n| neighbors(&graph, *n));
+    let top_sort = topological_sort(&nodes, |n| neighbors(&graph, *n));
+
+    if top_sort.is_err() {
+        return None;
+    }
+
+    let root = top_sort.unwrap()[0];
 
     let path1 = astar(&root, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node1);
     let path2 = astar(&root, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node2);
 
     if node1 != node2 {
-        let reverse1 = astar(&node1, |n| neighbors(&graph, *n), |_| 0, |n| *n == root);
-        let reverse2 = astar(&node2, |n| neighbors(&graph, *n), |_| 0, |n| *n == root);
+        let reverse1 = astar(&node1, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == root);
+        let reverse2 = astar(&node2, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == root);
 
         if reverse1.is_some() || reverse2.is_some() {
             return None;
@@ -131,16 +137,16 @@ mod tests {
         let mut map = Graph::<&str, i32>::new();
         let n1 = map.add_node("1");
         let n2 = map.add_node("2");
+        let n3 = map.add_node("3");
         let n4 = map.add_node("4");
         let n5 = map.add_node("5");
         let n6 = map.add_node("6");
-        let n7 = map.add_node("7");
 
-        assert_eq!(false, lca(&map, n2, n6).is_some());
+        assert_eq!(false, lca(&map, n1, n2).is_some());
 
-        assert_eq!(false, lca(&map, n7, n6).is_some());
+        assert_eq!(false, lca(&map, n3, n4).is_some());
 
-        assert_eq!(false, lca(&map, n4, n5).is_some());
+        assert_eq!(false, lca(&map, n5, n6).is_some());
     }
 
     /// Tests that the correct node is returned when there are separate connected graphs, also tests if `None` is returned when Nodes are not connected.
