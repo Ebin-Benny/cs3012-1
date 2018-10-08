@@ -2,18 +2,18 @@ extern crate pathfinding;
 extern crate petgraph;
 
 use self::pathfinding::prelude::{astar,topological_sort};
-use self::petgraph::graph::NodeIndex;
-use self::petgraph::Graph;
+use self::petgraph::{graph::NodeIndex, Graph, Direction::Outgoing};
+
 use std::collections::LinkedList;
 
 /// Returns list of neighbors of a node.
 fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex)> {
-    graph.neighbors(n).collect::<LinkedList<NodeIndex>>()
+    graph.neighbors_directed(n,Outgoing).collect::<LinkedList<NodeIndex>>()
 }
 /// Returns list of neighbors of a node with the corresponding cost.
 fn neighbors_cost<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, u32)> {
     let mut list: LinkedList<(NodeIndex, u32)> = LinkedList::new();
-    let mut neighbors = graph.neighbors(n).collect::<LinkedList<NodeIndex>>();
+    let mut neighbors = graph.neighbors_directed(n,Outgoing).collect::<LinkedList<NodeIndex>>();
     for element in neighbors.iter_mut() {
         list.push_back((*element, 1));
     }
@@ -75,7 +75,6 @@ mod tests {
 
         map.extend_with_edges(&[
             (n1,n2),
-            (n2,n2),
             (n2,n3),
             (n2,n4),
             (n3,n5),
