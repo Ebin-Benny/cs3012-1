@@ -41,42 +41,18 @@ pub fn lca<N, E>(
         return None;
     }
 
-    let root = top_sort.unwrap()[0];
+    let top_order = top_sort.unwrap();
 
-    let path1 = astar(&root, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node1);
-    let path2 = astar(&root, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node2);
+    let mut lca = None;
+    for n in top_order {
+        let path1 = astar(&n, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node1);
+        let path2 = astar(&n, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node2);
 
-    if node1 != node2 {
-        let reverse1 = astar(&node1, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == root);
-        let reverse2 = astar(&node2, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == root);
-
-        if reverse1.is_some() || reverse2.is_some() {
-            return None;
+        if path1.is_some() && path2.is_some() {
+            lca = Some(n);
         }
     }
-
-    if path1.is_some() && path2.is_some() {
-        let path1arr = path1.unwrap().0;
-        let path2arr = path2.unwrap().0;
-
-        let len;
-        if path1arr.len() < path2arr.len() {
-            len = path1arr.len();
-        } else {
-            len = path2arr.len();
-        }
-
-        let mut lca = root;
-        for i in 0..len {
-            if path1arr[i] == path2arr[i] {
-                lca = path1arr[i]
-            } else {
-                break;
-            }
-        }
-        return Some(lca);
-    }
-    return None;
+    return lca;
 }
 
 #[cfg(test)]
