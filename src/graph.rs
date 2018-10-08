@@ -190,7 +190,7 @@ mod tests {
         assert_eq!(n1, lca(&map, n1, n1).unwrap());
     }
 
-    /// Tests that the function returns `None` when there is a cycle in a path but functions normally otherwise.
+    /// Tests that the function returns `None` when there is a cycle in a path.
     #[test]
     fn testlca_structure() {
         let mut map = Graph::<&str, i32>::new();
@@ -212,8 +212,7 @@ mod tests {
         ]);
         assert_eq!(false, lca(&map, n2, n6).is_some());
 
-        assert_eq!(true, lca(&map, n6, n7).is_some());
-        assert_eq!(n3, lca(&map, n6, n7).unwrap());
+        assert_eq!(false, lca(&map, n6, n7).is_some());
 
     }
 }
