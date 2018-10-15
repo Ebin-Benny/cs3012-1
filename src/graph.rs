@@ -83,18 +83,39 @@ mod tests {
             (n6,n7),
             (n7,n8)
         ]);
+        assert_eq!(true, lca(&map, n8, n4).is_some());
+        assert_eq!(n4, lca(&map, n8, n4).unwrap());
 
-        assert_eq!(true, lca(&map, n3, n2).is_some());
-        assert_eq!(n2, lca(&map, n3, n2).unwrap());
+        assert_eq!(true, lca(&map, n8, n2).is_some());
+        assert_eq!(n2, lca(&map, n8, n2).unwrap());
 
-        assert_eq!(true, lca(&map, n6, n3).is_some());
-        assert_eq!(n2, lca(&map, n6, n3).unwrap());
+        assert_eq!(true, lca(&map, n8, n5).is_some());
+        assert_eq!(n5, lca(&map, n8, n5).unwrap());
+    }
 
-        assert_eq!(true, lca(&map, n7, n5).is_some());
-        assert_eq!(n5, lca(&map, n7, n5).unwrap());
+    /// Tests normal operations of lca on a connected graph structured as an directed acyclic graph.
+    #[test]
+    fn testlca_merge() {
+        let mut map = Graph::<&str, i32>::new();
+        let n1 = map.add_node("1");
+        let n2 = map.add_node("2");
+        let n3 = map.add_node("3");
+        let n4 = map.add_node("4");
+        let n5 = map.add_node("5");
+        let n6 = map.add_node("6");
+        let n7 = map.add_node("7");
+        let n8 = map.add_node("8");
 
-        assert_eq!(true, lca(&map, n7, n4).is_some());
-        assert_eq!(n4, lca(&map, n7, n4).unwrap());
+        map.extend_with_edges(&[
+            (n1,n2),
+            (n2,n3),
+            (n2,n4),
+            (n3,n5),
+            (n4,n6),
+            (n5,n7),
+            (n6,n7),
+            (n7,n8)
+        ]);
 
         assert_eq!(true, lca(&map, n8, n4).is_some());
         assert_eq!(n4, lca(&map, n8, n4).unwrap());
