@@ -57,6 +57,40 @@ fn compare_ancestors<N, E>(
     return None;
 }
 
+fn check_cycle<N, E>(graph: &Graph<N, E>, node: NodeIndex) -> bool {
+    let mut neighbors = graph
+        .neighbors_directed(node, Incoming)
+        .collect::<LinkedList<NodeIndex>>();
+    let mut visited = HashMap::<NodeIndex, bool>::new();
+    visited.insert(node, true);
+    for element in neighbors.iter_mut() {
+        if check_cycle_node(graph, visited.clone(), *element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn check_cycle_node<N, E>(
+    graph: &Graph<N, E>,
+    mut visited: HashMap<NodeIndex, bool>,
+    node: NodeIndex,
+) -> bool {
+    if visited.contains_key(&node){
+        return true;
+    }
+    visited.insert(node, true);
+    let mut neighbors = graph
+        .neighbors_directed(node, Incoming)
+        .collect::<LinkedList<NodeIndex>>();
+    for element in neighbors.iter_mut() {
+        if check_cycle_node(graph, visited.clone(), *element) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// A lowest common ancestor function for binary trees.
 ///
 /// This function calculates the lowest common ancestor of two nodes in a graph that is structured as a binary tree.
@@ -66,8 +100,8 @@ fn compare_ancestors<N, E>(
 /// * `node1` - The first node to calculate lca.
 /// * `node2` - The second node to calculate lca.
 pub fn lca<N, E>(graph: &Graph<N, E>, node1: NodeIndex, node2: NodeIndex) -> Option<NodeIndex> {
-    if node1 == node2 {
-        return Some(node1);
+    if check_cycle(graph, node1) || check_cycle(graph, node2) {
+        return None;
     }
     let mut ancestors = HashMap::<NodeIndex, NodeIndex>::new();
     ancestors = add_ancestors(graph, ancestors, node1);
@@ -144,6 +178,9 @@ mod tests {
 
         assert_eq!(true, lca(&map, n8, n5).is_some());
         assert_eq!(n5, lca(&map, n8, n5).unwrap());
+
+        assert_eq!(true, lca(&map, n3, n7).is_some());
+        assert_eq!(n3, lca(&map, n7, n7).unwrap());
     }
 
     /// Tests that `None` is returned when nodes are not connected.
@@ -219,7 +256,6 @@ mod tests {
             (n3, n7),
         ]);
         assert_eq!(false, lca(&map, n2, n6).is_some());
-
         assert_eq!(false, lca(&map, n6, n7).is_some());
     }
 }
