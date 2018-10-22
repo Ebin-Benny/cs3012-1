@@ -25,12 +25,19 @@ fn neighbors_cost<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIn
     return list;
 }
 
+/// Puts the ancestors of `node` onto a HashMap
+fn ancestors<N, E>(graph: &Graph<N, E>, node: NodeIndex) -> HashMap<NodeIndex, bool> {
+    let ancestors = HashMap::<NodeIndex, bool>::new();
+    return add_ancestors(graph, ancestors, node);
+}
+
+/// Puts the ancestors of `node` onto the HashMap `ancestors`
 fn add_ancestors<N, E>(
     graph: &Graph<N, E>,
-    mut ancestors: HashMap<NodeIndex, NodeIndex>,
+    mut ancestors: HashMap<NodeIndex, bool>,
     node: NodeIndex,
-) -> HashMap<NodeIndex, NodeIndex> {
-    ancestors.insert(node, node);
+) -> HashMap<NodeIndex, bool> {
+    ancestors.insert(node, true);
     let mut neighbors = graph
         .neighbors_directed(node, Incoming)
         .collect::<LinkedList<NodeIndex>>();
@@ -40,23 +47,39 @@ fn add_ancestors<N, E>(
     return ancestors;
 }
 
+/// Compares ancestors of `node` with `ancestors` and returns the lowest common ancestor.
 fn compare_ancestors<N, E>(
     graph: &Graph<N, E>,
-    ancestors: &HashMap<NodeIndex, NodeIndex>,
+    ancestors: &HashMap<NodeIndex, bool>,
     node: NodeIndex,
 ) -> Option<NodeIndex> {
+    return compare_ancestors_node(graph, ancestors, node, 0).0;
+}
+
+/// Compares ancestors of `node` with `ancestors` and returns the lowest common ancestor along with the cost.
+fn compare_ancestors_node<N, E>(
+    graph: &Graph<N, E>,
+    ancestors: &HashMap<NodeIndex, bool>,
+    node: NodeIndex,
+    cost: i32,
+) -> (Option<NodeIndex>, i32) {
     if ancestors.contains_key(&node) {
-        return Some(node);
+        return (Some(node), cost);
     }
     let mut neighbors = graph
         .neighbors_directed(node, Incoming)
         .collect::<LinkedList<NodeIndex>>();
+    let mut lca_cost = (None, <i32>::max_value());
     for element in neighbors.iter_mut() {
-        return compare_ancestors(&graph, ancestors, *element);
+        let ancestor_cost = compare_ancestors_node(&graph, ancestors, *element, cost + 1);
+        if ancestor_cost.0.is_some() && ancestor_cost.1 < lca_cost.1 {
+            lca_cost = ancestor_cost;
+        }
     }
-    return None;
+    return lca_cost;
 }
 
+/// Check if there is a cycle in the graph.
 fn check_cycle<N, E>(graph: &Graph<N, E>, node: NodeIndex) -> bool {
     let mut neighbors = graph
         .neighbors_directed(node, Incoming)
@@ -71,12 +94,13 @@ fn check_cycle<N, E>(graph: &Graph<N, E>, node: NodeIndex) -> bool {
     return false;
 }
 
+/// Check if there is a cycle in the graph by checking if a node is visited multiple times.
 fn check_cycle_node<N, E>(
     graph: &Graph<N, E>,
     mut visited: HashMap<NodeIndex, bool>,
     node: NodeIndex,
 ) -> bool {
-    if visited.contains_key(&node){
+    if visited.contains_key(&node) {
         return true;
     }
     visited.insert(node, true);
@@ -103,8 +127,7 @@ pub fn lca<N, E>(graph: &Graph<N, E>, node1: NodeIndex, node2: NodeIndex) -> Opt
     if check_cycle(graph, node1) || check_cycle(graph, node2) {
         return None;
     }
-    let mut ancestors = HashMap::<NodeIndex, NodeIndex>::new();
-    ancestors = add_ancestors(graph, ancestors, node1);
+    let ancestors = ancestors(graph, node1);
     return compare_ancestors(graph, &ancestors, node2);
 }
 
@@ -180,7 +203,7 @@ mod tests {
         assert_eq!(n5, lca(&map, n8, n5).unwrap());
 
         assert_eq!(true, lca(&map, n3, n7).is_some());
-        assert_eq!(n3, lca(&map, n7, n7).unwrap());
+        assert_eq!(n3, lca(&map, n3, n7).unwrap());
     }
 
     /// Tests that `None` is returned when nodes are not connected.
