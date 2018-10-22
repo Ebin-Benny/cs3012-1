@@ -1,23 +1,62 @@
 extern crate pathfinding;
 extern crate petgraph;
 
-use self::pathfinding::prelude::{astar,topological_sort};
-use self::petgraph::{graph::NodeIndex, Graph, Direction::Outgoing};
+use self::pathfinding::prelude::{astar, topological_sort};
+use self::petgraph::{graph::NodeIndex, Direction::Incoming, Direction::Outgoing, Graph};
 
+use std::collections::HashMap;
 use std::collections::LinkedList;
 
 /// Returns list of neighbors of a node.
 fn neighbors<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex)> {
-    graph.neighbors_directed(n,Outgoing).collect::<LinkedList<NodeIndex>>()
+    graph
+        .neighbors_directed(n, Outgoing)
+        .collect::<LinkedList<NodeIndex>>()
 }
 /// Returns list of neighbors of a node with the corresponding cost.
 fn neighbors_cost<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIndex, u32)> {
     let mut list: LinkedList<(NodeIndex, u32)> = LinkedList::new();
-    let mut neighbors = graph.neighbors_directed(n,Outgoing).collect::<LinkedList<NodeIndex>>();
+    let mut neighbors = graph
+        .neighbors_directed(n, Outgoing)
+        .collect::<LinkedList<NodeIndex>>();
     for element in neighbors.iter_mut() {
         list.push_back((*element, 1));
     }
     return list;
+}
+
+fn add_ancestors<N, E>(
+    graph: &Graph<N, E>,
+    mut ancestors: HashMap<NodeIndex, NodeIndex>,
+    node: NodeIndex,
+) -> HashMap<NodeIndex, NodeIndex>{
+    let mut neighbors = graph
+        .neighbors_directed(node, Incoming)
+        .collect::<LinkedList<NodeIndex>>();
+    for element in neighbors.iter_mut() {
+        ancestors.insert(*element, *element);
+        ancestors = add_ancestors(graph, ancestors, *element);
+    }
+    return ancestors
+}
+
+fn compare_ancestors<N, E>(
+    graph: &Graph<N, E>,
+    ancestors: &HashMap<NodeIndex, NodeIndex>,
+    node: NodeIndex,
+) -> Option<NodeIndex> {
+    let mut neighbors = graph
+        .neighbors_directed(node, Incoming)
+        .collect::<LinkedList<NodeIndex>>();
+    for element in neighbors.iter_mut() {
+        if ancestors.contains_key(element) {
+            return Some(*element);
+        }
+    }
+    for element in neighbors.iter_mut() {
+        return compare_ancestors(&graph, ancestors, *element);
+    }
+    return None;
 }
 
 /// A lowest common ancestor function for binary trees.
@@ -28,31 +67,11 @@ fn neighbors_cost<N, E>(graph: &Graph<N, E>, n: NodeIndex) -> LinkedList<(NodeIn
 /// * `root`  - The root node of the binary tree.
 /// * `node1` - The first node to calculate lca.
 /// * `node2` - The second node to calculate lca.
-pub fn lca<N, E>(
-    graph: &Graph<N, E>,
-    node1: NodeIndex,
-    node2: NodeIndex,
-) -> Option<NodeIndex> {
+pub fn lca<N, E>(graph: &Graph<N, E>, node1: NodeIndex, node2: NodeIndex) -> Option<NodeIndex> {
 
-    let nodes = graph.node_indices().collect::<Vec<NodeIndex>>();
-    let top_sort = topological_sort(&nodes, |n| neighbors(&graph, *n));
-
-    if top_sort.is_err() {
-        return None;
-    }
-
-    let top_order = top_sort.unwrap();
-
-    let mut lca = None;
-    for n in top_order {
-        let path1 = astar(&n, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node1);
-        let path2 = astar(&n, |n| neighbors_cost(&graph, *n), |_| 0, |n| *n == node2);
-
-        if path1.is_some() && path2.is_some() {
-            lca = Some(n);
-        }
-    }
-    return lca;
+    let mut ancestors = HashMap::<NodeIndex, NodeIndex>::new();
+    ancestors = add_ancestors(graph, ancestors, node1);
+    return compare_ancestors(graph, &ancestors, node2);
 }
 
 #[cfg(test)]
@@ -74,14 +93,14 @@ mod tests {
         let n8 = map.add_node("8");
 
         map.extend_with_edges(&[
-            (n1,n2),
-            (n2,n3),
-            (n2,n4),
-            (n3,n5),
-            (n4,n6),
-            (n5,n7),
-            (n6,n7),
-            (n7,n8)
+            (n1, n2),
+            (n2, n3),
+            (n2, n4),
+            (n3, n5),
+            (n4, n6),
+            (n5, n7),
+            (n6, n7),
+            (n7, n8),
         ]);
         assert_eq!(true, lca(&map, n8, n4).is_some());
         assert_eq!(n4, lca(&map, n8, n4).unwrap());
@@ -107,14 +126,14 @@ mod tests {
         let n8 = map.add_node("8");
 
         map.extend_with_edges(&[
-            (n1,n2),
-            (n2,n3),
-            (n2,n4),
-            (n3,n5),
-            (n4,n6),
-            (n5,n7),
-            (n6,n7),
-            (n7,n8)
+            (n1, n2),
+            (n2, n3),
+            (n2, n4),
+            (n3, n5),
+            (n4, n6),
+            (n5, n7),
+            (n6, n7),
+            (n7, n8),
         ]);
 
         assert_eq!(true, lca(&map, n8, n4).is_some());
@@ -158,14 +177,7 @@ mod tests {
         let n7 = map.add_node("7");
         let n8 = map.add_node("8");
 
-        map.extend_with_edges(&[
-            (n1,n2),
-            (n2,n3),
-            (n2,n4),
-            (n5,n6),
-            (n5,n7),
-            (n6,n8)
-        ]);
+        map.extend_with_edges(&[(n1, n2), (n2, n3), (n2, n4), (n5, n6), (n5, n7), (n6, n8)]);
 
         assert_eq!(true, lca(&map, n2, n4).is_some());
         assert_eq!(n2, lca(&map, n2, n4).unwrap());
@@ -209,6 +221,5 @@ mod tests {
         assert_eq!(false, lca(&map, n2, n6).is_some());
 
         assert_eq!(false, lca(&map, n6, n7).is_some());
-
     }
 }
