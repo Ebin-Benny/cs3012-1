@@ -29,15 +29,15 @@ fn add_ancestors<N, E>(
     graph: &Graph<N, E>,
     mut ancestors: HashMap<NodeIndex, NodeIndex>,
     node: NodeIndex,
-) -> HashMap<NodeIndex, NodeIndex>{
+) -> HashMap<NodeIndex, NodeIndex> {
+    ancestors.insert(node, node);
     let mut neighbors = graph
         .neighbors_directed(node, Incoming)
         .collect::<LinkedList<NodeIndex>>();
     for element in neighbors.iter_mut() {
-        ancestors.insert(*element, *element);
         ancestors = add_ancestors(graph, ancestors, *element);
     }
-    return ancestors
+    return ancestors;
 }
 
 fn compare_ancestors<N, E>(
@@ -45,14 +45,12 @@ fn compare_ancestors<N, E>(
     ancestors: &HashMap<NodeIndex, NodeIndex>,
     node: NodeIndex,
 ) -> Option<NodeIndex> {
+    if ancestors.contains_key(&node) {
+        return Some(node);
+    }
     let mut neighbors = graph
         .neighbors_directed(node, Incoming)
         .collect::<LinkedList<NodeIndex>>();
-    for element in neighbors.iter_mut() {
-        if ancestors.contains_key(element) {
-            return Some(*element);
-        }
-    }
     for element in neighbors.iter_mut() {
         return compare_ancestors(&graph, ancestors, *element);
     }
@@ -68,7 +66,9 @@ fn compare_ancestors<N, E>(
 /// * `node1` - The first node to calculate lca.
 /// * `node2` - The second node to calculate lca.
 pub fn lca<N, E>(graph: &Graph<N, E>, node1: NodeIndex, node2: NodeIndex) -> Option<NodeIndex> {
-
+    if node1 == node2 {
+        return Some(node1);
+    }
     let mut ancestors = HashMap::<NodeIndex, NodeIndex>::new();
     ancestors = add_ancestors(graph, ancestors, node1);
     return compare_ancestors(graph, &ancestors, node2);
